@@ -170,6 +170,11 @@ class G1KungfuBotPolicyCfg(G1AsapPolicyCfg):
         *[2.0773219e-01, -1.9702259e-01, -2.3902415e-03, 8.8817328e-01],
     ]
 
+class G1_23ZYPolicyCfg(G1KungfuBotPolicyCfg):
+    policy_name: str = "zuoyi"
+    relative_path: str = "zuoyi_16000.onnx"
+    motion_length_s: float = 4.0
+    
 
 class G1KungfuBotGeneralPolicyCfg(KungfuBotGeneralPolicyCfg):
     robot: str = "g1"

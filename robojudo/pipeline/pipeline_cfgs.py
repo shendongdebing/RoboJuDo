@@ -48,6 +48,7 @@ class RlMultiPolicyPipelineCfg(PipelineCfg):
 
     policies: list[PolicyCfg | Any] = []
     """First policy as init, rest as extra policies, can be switched to"""
+    next_policy: dict[int, int] = [0, 0] # 接下来的动作
 
 
 class RlLocoMimicPipelineCfg(PipelineCfg):

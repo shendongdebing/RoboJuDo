@@ -120,6 +120,14 @@ class RlMultiPolicyPipeline(RlPipeline):
     def post_step_callback(self, env_data, ctrl_data, extras, pd_target):
         self.timestep += 1
 
+        # Handle policy CALLBACK
+        for callback in extras.get("CALLBACK", []):
+            match callback:
+                case "[MOTION_DONE]":
+                    cur_id = self.policy_manager.current_policy_id
+                    next_id = self.cfg.next_policy.get(cur_id, 0)
+                    self.policy_manager.switch_policy(next_id)
+
         commands = ctrl_data.get("COMMANDS", [])
         for command in commands:
             match command:
