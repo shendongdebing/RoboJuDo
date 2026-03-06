@@ -25,3 +25,21 @@ class G1RlLocoMimicPipelineCfg(RlLocoMimicPipelineCfg):
     ]
     """Indices of the upper body DOFs to be overridden, no waist roll and pitch"""
     # fmt: on
+
+# 23dof_lock_wrist version
+class G1_23RlLocoMimicPipelineCfg(RlLocoMimicPipelineCfg):
+    robot: str = "g1"
+
+    upper_dof_num: int = 11
+    # fmt: off
+    upper_dof_pos_default: list[float] | None = [
+        0.0, 0.0, 0.0,
+        0.0, 0.3, 0.0, 1.0,
+        0.0, -0.3, 0.0, 1.0,
+    ]
+    upper_dof_override_indices: list[int] | None = [
+        -11, -10, -9,
+        -8, -7, -6, -5,
+        -4, -3, -2, -1
+    ]
+    # fmt: on
