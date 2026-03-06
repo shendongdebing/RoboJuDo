@@ -26,7 +26,7 @@ from .policy.g1_amo_policy_cfg import G1AmoPolicyCfg  # noqa: F401
 from .policy.g1_asap_policy_cfg import G1AsapLocoPolicyCfg, G1AsapPolicyCfg  # noqa: F401
 from .policy.g1_beyondmimic_policy_cfg import G1BeyondMimicPolicyCfg  # noqa: F401
 from .policy.g1_h2h_policy_cfg import G1H2HPolicyCfg  # noqa: F401
-from .policy.g1_kungfubot_policy_cfg import G1KungfuBotGeneralPolicyCfg, G1KungfuBotPolicyCfg, G1_23ZYPolicyCfg  # noqa: F401
+from .policy.g1_kungfubot_policy_cfg import G1KungfuBotGeneralPolicyCfg, G1KungfuBotPolicyCfg  # noqa: F401
 from .policy.g1_smooth_policy_cfg import G1SmoothPolicyCfg  # noqa: F401
 from .policy.g1_twist_policy_cfg import G1TwistPolicyCfg  # noqa: F401
 from .policy.g1_unitree_policy_cfg import G1UnitreePolicyCfg, G1UnitreeWoGaitPolicyCfg  # noqa: F401
@@ -107,52 +107,6 @@ class g1_switch(RlMultiPolicyPipelineCfg):
         G1UnitreePolicyCfg(),
         G1AmoPolicyCfg(),
     ]
-
-@cfg_registry.register
-class g1_custom(g1_switch):
-    env: G1_23MujocoEnvCfg = G1_23MujocoEnvCfg()
-    ctrl: list[KeyboardCtrlCfg | JoystickCtrlCfg] = [
-        KeyboardCtrlCfg(
-            # triggers_extra={
-            #     "Key.space": "[SHUTDOWN]",
-            #     "r": "[SIM_REBORN]",
-            # }
-        ),
-        JoystickCtrlCfg(
-            triggers_extra={
-                "A": "[SHUTDOWN]",
-                "X": "[MOTION_RESET]",
-                "B": "[POLICY_SWITCH],0",
-                "Y": "[SIM_REBORN]",
-                "RB+Up": "[POLICY_SWITCH],4",
-                "RB+Down": "[POLICY_SWITCH],1",
-                "RB+Left": "[POLICY_SWITCH],2",
-                "RB+Right": "[POLICY_SWITCH],3",
-            }
-        ),
-    ]
-
-    policies: list[PolicyCfg] = [
-        G1UnitreePolicyCfg(),       # 0.踏步
-        G1AmoPolicyCfg(),           # 1.站立
-        G1_23ZYPolicyCfg(),         # 2.作揖
-        G1KungfuBotPolicyCfg(),     # 3.打拳
-        G1_23ZYPolicyCfg(),         # 4.作揖>打拳>踏步
-    ]
-    
-    next_policy: dict[int, int] = {
-        4: 3,
-    }
-
-@cfg_registry.register
-class g1_cr(g1_custom):
-    env: G1RealEnvCfg = G1RealEnvCfg(
-        # env_type="UnitreeEnv",  # For unitree_sdk2py
-        env_type="UnitreeCppEnv",  # For unitree_cpp, check README for more details
-        unitree=G1UnitreeCfg(
-            net_if="eth0",  # note: change to your network interface
-        ),
-    )
 
 
 @cfg_registry.register

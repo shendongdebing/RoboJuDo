@@ -24,6 +24,7 @@ class PipelineCfg(Config):
     If True, perform safety check after each step.
     We recommend enabling this, however if motion is very aggressive, you may disable it.
     """
+    next_policy: dict[int, int] = {} # 接下来的动作
 
 
 class RlPipelineCfg(PipelineCfg):
@@ -48,7 +49,6 @@ class RlMultiPolicyPipelineCfg(PipelineCfg):
 
     policies: list[PolicyCfg | Any] = []
     """First policy as init, rest as extra policies, can be switched to"""
-    next_policy: dict[int, int] = [0, 0] # 接下来的动作
 
 
 class RlLocoMimicPipelineCfg(PipelineCfg):

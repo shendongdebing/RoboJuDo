@@ -24,8 +24,10 @@ class PolicyInterpManager(PolicyManager):
         IN_PROGRESS = auto()
         END = auto()
 
-    DURATIONS_LOCO_MIMIC = [0, 75, 25]  # [start, in-progress, end] in steps
-    DURATIONS_MIMIC_LOCO = [25, 75, 0]  # [start, in-progress, end] in steps
+    DURATIONS_LOCO_MIMIC = [0, 25, 25]  # [start, in-progress, end] in steps
+    DURATIONS_MIMIC_LOCO = [25, 25, 0]  # [start, in-progress, end] in steps
+
+    next : int = -1
 
     def __init__(
         self,
@@ -118,6 +120,9 @@ class PolicyInterpManager(PolicyManager):
         else:
             self.interp_state = self.InterpState.END
 
+    def set_mimic_policy(self, index: int):
+        self.toggle_mimic_policy((index - self.policy_mimic_idx) % self.policy_mimic_num)
+
     def toggle_mimic_policy(self, delta: int):
         # only switch mimic policy if current policy is locomotion
         if self.current_policy_id != self.policy_loco_id:
@@ -139,8 +144,17 @@ class PolicyInterpManager(PolicyManager):
         self._interpolate_init(
             get_target_pos=lambda: self.loco_dof_pos,
             durations=self.DURATIONS_MIMIC_LOCO,
-            callback_start=lambda: self.set_policy(self.policy_loco_id),
+            # callback_start=lambda: self.set_policy(self.policy_loco_id),
+            callback_start=lambda: self.switch_to_next(),
         )
+
+    def switch_to_next(self):
+        self.set_policy(self.policy_loco_id)
+        if self.next != -1:
+            self.set_mimic_policy(self.next)
+            self.policy_locomotion_mimic_flag = 1
+            self.set_policy(self.policy_mimic_ids[self.next])
+            self.next = -1
 
     def switch_to_mimic(self):
         if self.current_policy_id != self.policy_loco_id:
@@ -217,9 +231,12 @@ class RlLocoMimicPipeline(RlMultiPolicyPipeline):
         for callback in extras.get("CALLBACK", []):
             match callback:
                 case "[MOTION_DONE]":
-                    if self.policy_locomotion_mimic_flag == 1:
-                        commands.append("[POLICY_LOCO]")
-                        logger.info("Mimic motion done, switch to locomotion policy.")
+                    cur_idx = self.policy_manager.policy_mimic_idx
+                    self.policy_manager.next = self.cfg.next_policy.get(cur_idx, -1)
+
+                    # if self.policy_locomotion_mimic_flag == 1:
+                    commands.append("[POLICY_LOCO]")
+                    logger.info("Mimic motion done, switch to locomotion policy.")
 
         for command in commands:
             match command:
@@ -236,6 +253,12 @@ class RlLocoMimicPipeline(RlMultiPolicyPipeline):
                         self.policy_manager.toggle_mimic_policy(1)
                     elif switch_target == "LAST":
                         self.policy_manager.toggle_mimic_policy(-1)
+                    else:
+                        try:
+                            self.policy_manager.set_mimic_policy(int(switch_target))
+                        except ValueError:
+                            print(f"[WARN] Invalid policy target: {switch_target}")
+                    commands.append("[POLICY_MIMIC]")
                 case "[POLICY_LOCO]":
                     self.policy_locomotion_mimic_flag = 0
                     self.policy_manager.switch_to_loco()
